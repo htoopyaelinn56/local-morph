@@ -175,6 +175,23 @@ mod tests {
         assert_eq!(output_format, expected_format);
     }
 
+    fn convert_and_assert_tiff(
+        target: &str,
+        expected_format: ImageFormat,
+        output_name: &str,
+    ) {
+        let img_path = get_asset_path("original.tiff");
+        let img_data = fs::read(img_path).expect("Failed to read test image");
+        let output_data = convert_image_pure(&img_data, target).expect("Conversion failed");
+        let output_format =
+            detect_image_format(&output_data).expect("Failed to detect output format");
+
+        let output_path = get_asset_path(output_name);
+        fs::write(&output_path, &output_data).expect("Failed to write output image");
+
+        assert_eq!(output_format, expected_format);
+    }
+
     #[test]
     fn guess_png() {
         let img_path = get_asset_path("original.png");
@@ -221,6 +238,14 @@ mod tests {
         let img_data = fs::read(img_path).expect("Failed to read test image");
         let format = detect_image_format(&img_data).expect("Failed to detect format");
         assert_eq!(format, ImageFormat::Bmp);
+    }
+
+    #[test]
+    fn guess_tiff() {
+        let img_path = get_asset_path("original.tiff");
+        let img_data = fs::read(img_path).expect("Failed to read test image");
+        let format = detect_image_format(&img_data).expect("Failed to detect format");
+        assert_eq!(format, ImageFormat::Tiff);
     }
 
     #[test]
@@ -616,6 +641,54 @@ mod tests {
     #[test]
     fn convert_bmp_to_farbfeld() {
         convert_and_assert_bmp("farbfeld", ImageFormat::Farbfeld, "output_from_bmp.ff");
+    }
+
+    #[test]
+    fn convert_tiff_to_png() {
+        convert_and_assert_tiff("png", ImageFormat::Png, "output_from_tiff.png");
+    }
+
+    #[test]
+    fn convert_tiff_to_jpeg() {
+        convert_and_assert_tiff("jpeg", ImageFormat::Jpeg, "output_from_tiff.jpeg");
+    }
+
+    #[test]
+    fn convert_tiff_to_gif() {
+        convert_and_assert_tiff("gif", ImageFormat::Gif, "output_from_tiff.gif");
+    }
+
+    #[test]
+    fn convert_tiff_to_webp() {
+        convert_and_assert_tiff("webp", ImageFormat::WebP, "output_from_tiff.webp");
+    }
+
+    #[test]
+    fn convert_tiff_to_bmp() {
+        convert_and_assert_tiff("bmp", ImageFormat::Bmp, "output_from_tiff.bmp");
+    }
+
+    #[test]
+    fn convert_tiff_to_ico() {
+        convert_and_assert_tiff("ico", ImageFormat::Ico, "output_from_tiff.ico");
+    }
+
+    #[test]
+    fn convert_tiff_to_tga() {
+        let img_path = get_asset_path("original.tiff");
+        let img_data = fs::read(img_path).expect("Failed to read test image");
+        let output_data = convert_image_pure(&img_data, "tga").expect("Conversion failed");
+
+        let reloaded_image = image::load_from_memory_with_format(&output_data, ImageFormat::Tga);
+        assert!(reloaded_image.is_ok());
+
+        let output_path = get_asset_path("output_from_tiff.tga");
+        fs::write(&output_path, &output_data).expect("Failed to write output image");
+    }
+
+    #[test]
+    fn convert_tiff_to_farbfeld() {
+        convert_and_assert_tiff("farbfeld", ImageFormat::Farbfeld, "output_from_tiff.ff");
     }
 
     #[test]
