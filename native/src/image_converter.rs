@@ -124,6 +124,23 @@ mod tests {
         assert_eq!(output_format, expected_format);
     }
 
+    fn convert_and_assert_webp(
+        target: &str,
+        expected_format: ImageFormat,
+        output_name: &str,
+    ) {
+        let img_path = get_asset_path("original.webp");
+        let img_data = fs::read(img_path).expect("Failed to read test image");
+        let output_data = convert_image_pure(&img_data, target).expect("Conversion failed");
+        let output_format =
+            detect_image_format(&output_data).expect("Failed to detect output format");
+
+        let output_path = get_asset_path(output_name);
+        fs::write(&output_path, &output_data).expect("Failed to write output image");
+
+        assert_eq!(output_format, expected_format);
+    }
+
     #[test]
     fn guess_png() {
         let img_path = get_asset_path("original.png");
@@ -146,6 +163,14 @@ mod tests {
         let img_data = fs::read(img_path).expect("Failed to read test image");
         let format = detect_image_format(&img_data).expect("Failed to detect format");
         assert_eq!(format, ImageFormat::Gif);
+    }
+
+    #[test]
+    fn guess_webp() {
+        let img_path = get_asset_path("original.webp");
+        let img_data = fs::read(img_path).expect("Failed to read test image");
+        let format = detect_image_format(&img_data).expect("Failed to detect format");
+        assert_eq!(format, ImageFormat::WebP);
     }
 
     #[test]
@@ -387,6 +412,54 @@ mod tests {
     #[test]
     fn convert_gif_to_farbfeld() {
         convert_and_assert_gif("farbfeld", ImageFormat::Farbfeld, "output_from_gif.ff");
+    }
+
+    #[test]
+    fn convert_webp_to_png() {
+        convert_and_assert_webp("png", ImageFormat::Png, "output_from_webp.png");
+    }
+
+    #[test]
+    fn convert_webp_to_jpeg() {
+        convert_and_assert_webp("jpeg", ImageFormat::Jpeg, "output_from_webp.jpeg");
+    }
+
+    #[test]
+    fn convert_webp_to_gif() {
+        convert_and_assert_webp("gif", ImageFormat::Gif, "output_from_webp.gif");
+    }
+
+    #[test]
+    fn convert_webp_to_bmp() {
+        convert_and_assert_webp("bmp", ImageFormat::Bmp, "output_from_webp.bmp");
+    }
+
+    #[test]
+    fn convert_webp_to_ico() {
+        convert_and_assert_webp("ico", ImageFormat::Ico, "output_from_webp.ico");
+    }
+
+    #[test]
+    fn convert_webp_to_tiff() {
+        convert_and_assert_webp("tiff", ImageFormat::Tiff, "output_from_webp.tiff");
+    }
+
+    #[test]
+    fn convert_webp_to_tga() {
+        let img_path = get_asset_path("original.webp");
+        let img_data = fs::read(img_path).expect("Failed to read test image");
+        let output_data = convert_image_pure(&img_data, "tga").expect("Conversion failed");
+
+        let reloaded_image = image::load_from_memory_with_format(&output_data, ImageFormat::Tga);
+        assert!(reloaded_image.is_ok());
+
+        let output_path = get_asset_path("output_from_webp.tga");
+        fs::write(&output_path, &output_data).expect("Failed to write output image");
+    }
+
+    #[test]
+    fn convert_webp_to_farbfeld() {
+        convert_and_assert_webp("farbfeld", ImageFormat::Farbfeld, "output_from_webp.ff");
     }
 
     #[test]
