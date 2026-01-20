@@ -1,3 +1,4 @@
+use image::imageops::FilterType;
 use image::{ImageFormat, Rgba, RgbaImage};
 use std::io::Cursor;
 
@@ -47,6 +48,23 @@ pub fn convert_image_pure(input_data: &[u8], target_format_str: &str) -> Result<
         // When writing to JPEG, the encoder will ignore the alpha channel,
         // leaving you with the RGB values blended on white.
         img = image::DynamicImage::ImageRgba8(background);
+    }
+
+    // --- FIX: Handle ICO Size Limit (Max 256x256) ---
+    if output_format == ImageFormat::Ico {
+        let (width, height) = (img.width(), img.height());
+
+        if width > 256 || height > 256 {
+            // Resize to 256x256 while maintaining aspect ratio.
+            // "Lanczos3" is slower but gives the best quality for downscaling.
+            img = img.resize(256, 256, FilterType::Lanczos3);
+        }
+    }
+
+    // --- FIX: Handle Farbfeld Color Depth (Requires 16-bit RGBA) ---
+    if output_format == ImageFormat::Farbfeld {
+        // Promotes 8-bit images to 16-bit (e.g. 255 becomes 65535)
+        img = image::DynamicImage::ImageRgba16(img.into_rgba16());
     }
     // -----------------------------------------
 
@@ -189,5 +207,70 @@ mod tests {
         let output_path = get_asset_path("output_from_png.ico");
         fs::write(&output_path, &output_data).expect("Failed to write output image");
         assert_eq!(output_format, ImageFormat::Ico);
+    }
+
+    #[test]
+    fn convert_png_to_tiff() {
+        let img_path = get_asset_path("original.png");
+        let img_data = fs::read(img_path).expect("Failed to read test image");
+        let output_data = convert_image_pure(&img_data, "tiff").expect("Conversion failed");
+        let output_format =
+            detect_image_format(&output_data).expect("Failed to detect output format");
+
+        // write output at get_asset_path with name "converted_output.tiff" for manual inspection
+        let output_path = get_asset_path("output_from_png.tiff");
+        fs::write(&output_path, &output_data).expect("Failed to write output image");
+        assert_eq!(output_format, ImageFormat::Tiff);
+    }
+
+    #[test]
+    fn convert_png_to_tga() {
+        let img_path = get_asset_path("original.png");
+        let img_data = fs::read(img_path).expect("Failed to read test image");
+
+        // 1. Run Conversion
+        let output_data = convert_image_pure(&img_data, "tga").expect("Conversion failed");
+
+        // 2. Verify Output
+        // TGA cannot be guessed. We must explicitly ask: "Is this a valid TGA?"
+        let reloaded_image = image::load_from_memory_with_format(&output_data, ImageFormat::Tga);
+
+        assert!(
+            reloaded_image.is_ok(),
+            "The output bytes should be a valid TGA image that we can reload"
+        );
+
+        // Optional: Write to file to check manually
+        let output_path = get_asset_path("output_from_png.tga");
+        fs::write(&output_path, &output_data).expect("Failed to write output image");
+    }
+
+    #[test]
+    fn convert_png_to_farbfeld() {
+        let img_path = get_asset_path("original.png");
+        let img_data = fs::read(img_path).expect("Failed to read test image");
+        let output_data = convert_image_pure(&img_data, "farbfeld").expect("Conversion failed");
+        let output_format =
+            detect_image_format(&output_data).expect("Failed to detect output format");
+
+        // write output at get_asset_path with name "converted_output.ff" for manual inspection
+        let output_path = get_asset_path("output_from_png.ff");
+        fs::write(&output_path, &output_data).expect("Failed to write output image");
+        assert_eq!(output_format, ImageFormat::Farbfeld);
+    }
+
+    #[test]
+    fn convert_unsupported_format() {
+        let img_path = get_asset_path("original.png");
+        let img_data = fs::read(img_path).expect("Failed to read test image");
+        let result = convert_image_pure(&img_data, "unsupported_format");
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn convert_invalid_image_data() {
+        let invalid_data = b"This is not an image!";
+        let result = convert_image_pure(invalid_data, "png");
+        assert!(result.is_err());
     }
 }
