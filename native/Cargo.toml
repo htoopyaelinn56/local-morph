@@ -12,3 +12,4 @@ image = { version = "0.25.9", default-features = false, features = [
     "png", "jpeg", "gif", "webp", "bmp", "ico", "tiff",
     "tga", "pnm", "dds", "qoi", "ff",
     "default-formats"] }
+web-sys = { version = "0.3.85", features = ["console"] }
