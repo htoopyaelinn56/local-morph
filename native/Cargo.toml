@@ -3,4 +3,12 @@ name = "native"
 version = "0.1.0"
 edition = "2024"
 
+[lib]
+crate-type = ["cdylib"]
+
 [dependencies]
+wasm-bindgen = "0.2.95"
+image = { version = "0.25.9", default-features = false, features = [
+    "png", "jpeg", "gif", "webp", "bmp", "ico", "tiff",
+    "tga", "pnm", "dds", "qoi", "ff",
+    "default-formats"] }
