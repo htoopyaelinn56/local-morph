@@ -1,68 +1,99 @@
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&display=swap');
+
 :root {
-  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
-  line-height: 1.5;
-  font-weight: 400;
+  /* Palette extracted from reference image */
+  --bg-cream: #FFF6E9;
+  --c-black: #121212;
+  --c-white: #FFFFFF;
+  --c-yellow: #FCD148;
+  --c-pink: rgb(250, 88, 174);
+  --c-purple: #8C82FC;
+  --c-blue: #2AB7CA;
+  --c-green: #00C49A;
 
-  color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
-
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+  /* Neobrutalism Core Styles */
+  --border-thick: 3px solid var(--c-black);
+  --shadow-hard: 5px 5px 0px 0px var(--c-black);
+  --shadow-hover: 2px 2px 0px 0px var(--c-black);
+  --radius-main: 12px;
+  --radius-large: 24px;
 }
 
-a {
-  font-weight: 500;
-  color: #646cff;
-  text-decoration: inherit;
-}
-a:hover {
-  color: #535bf2;
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
 }
 
 body {
-  margin: 0;
-  display: flex;
-  place-items: center;
-  min-width: 320px;
+  font-family: 'Space Grotesk', sans-serif;
+  background-color: var(--bg-cream);
+  color: var(--c-black);
   min-height: 100vh;
+  overflow-x: hidden;
 }
 
-h1 {
-  font-size: 3.2em;
-  line-height: 1.1;
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 12px;
+}
+::-webkit-scrollbar-track {
+  background: var(--bg-cream);
+  border-left: var(--border-thick);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--c-black);
+  border: 2px solid var(--bg-cream);
 }
 
-button {
-  border-radius: 8px;
-  border: 1px solid transparent;
-  padding: 0.6em 1.2em;
-  font-size: 1em;
-  font-weight: 500;
-  font-family: inherit;
-  background-color: #1a1a1a;
+/* Utility for the "Sticker" look */
+.neo-box {
+  background: var(--c-white);
+  border: var(--border-thick);
+  box-shadow: var(--shadow-hard);
+  border-radius: var(--radius-main);
+  transition: all 0.2s ease-in-out;
+}
+
+.neo-button {
   cursor: pointer;
-  transition: border-color 0.25s;
-}
-button:hover {
-  border-color: #646cff;
-}
-button:focus,
-button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
+  background: var(--c-yellow);
+  color: var(--c-black);
+  border: var(--border-thick);
+  padding: 12px 24px;
+  font-weight: 700;
+  font-size: 1.1rem;
+  box-shadow: var(--shadow-hard);
+  border-radius: 50px; /* Pill shape */
+  text-transform: uppercase;
+  transition: all 0.1s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
 }
 
-@media (prefers-color-scheme: light) {
-  :root {
-    color: #213547;
-    background-color: #ffffff;
-  }
-  a:hover {
-    color: #747bff;
-  }
-  button {
-    background-color: #f9f9f9;
-  }
+.neo-button:hover {
+  transform: translate(3px, 3px);
+  box-shadow: 0px 0px 0px 0px var(--c-black);
+}
+
+.neo-button:active {
+  transform: translate(5px, 5px);
+}
+
+.neo-select {
+  appearance: none;
+  background-color: var(--c-white);
+  border: var(--border-thick);
+  padding: 12px 16px;
+  border-radius: var(--radius-main);
+  font-family: inherit;
+  font-weight: bold;
+  cursor: pointer;
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: right 1rem center;
+  background-size: 1em;
+  min-width: 150px;
 }
