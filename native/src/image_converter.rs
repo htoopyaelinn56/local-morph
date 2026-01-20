@@ -107,6 +107,23 @@ mod tests {
         assert_eq!(output_format, expected_format);
     }
 
+    fn convert_and_assert_gif(
+        target: &str,
+        expected_format: ImageFormat,
+        output_name: &str,
+    ) {
+        let img_path = get_asset_path("original.gif");
+        let img_data = fs::read(img_path).expect("Failed to read test image");
+        let output_data = convert_image_pure(&img_data, target).expect("Conversion failed");
+        let output_format =
+            detect_image_format(&output_data).expect("Failed to detect output format");
+
+        let output_path = get_asset_path(output_name);
+        fs::write(&output_path, &output_data).expect("Failed to write output image");
+
+        assert_eq!(output_format, expected_format);
+    }
+
     #[test]
     fn guess_png() {
         let img_path = get_asset_path("original.png");
@@ -121,6 +138,14 @@ mod tests {
         let img_data = fs::read(img_path).expect("Failed to read test image");
         let format = detect_image_format(&img_data).expect("Failed to detect format");
         assert_eq!(format, ImageFormat::Jpeg);
+    }
+
+    #[test]
+    fn guess_gif() {
+        let img_path = get_asset_path("original.gif");
+        let img_data = fs::read(img_path).expect("Failed to read test image");
+        let format = detect_image_format(&img_data).expect("Failed to detect format");
+        assert_eq!(format, ImageFormat::Gif);
     }
 
     #[test]
@@ -314,6 +339,54 @@ mod tests {
         let output_path = get_asset_path("output_from_png.ff");
         fs::write(&output_path, &output_data).expect("Failed to write output image");
         assert_eq!(output_format, ImageFormat::Farbfeld);
+    }
+
+    #[test]
+    fn convert_gif_to_png() {
+        convert_and_assert_gif("png", ImageFormat::Png, "output_from_gif.png");
+    }
+
+    #[test]
+    fn convert_gif_to_jpeg() {
+        convert_and_assert_gif("jpeg", ImageFormat::Jpeg, "output_from_gif.jpeg");
+    }
+
+    #[test]
+    fn convert_gif_to_webp() {
+        convert_and_assert_gif("webp", ImageFormat::WebP, "output_from_gif.webp");
+    }
+
+    #[test]
+    fn convert_gif_to_bmp() {
+        convert_and_assert_gif("bmp", ImageFormat::Bmp, "output_from_gif.bmp");
+    }
+
+    #[test]
+    fn convert_gif_to_ico() {
+        convert_and_assert_gif("ico", ImageFormat::Ico, "output_from_gif.ico");
+    }
+
+    #[test]
+    fn convert_gif_to_tiff() {
+        convert_and_assert_gif("tiff", ImageFormat::Tiff, "output_from_gif.tiff");
+    }
+
+    #[test]
+    fn convert_gif_to_tga() {
+        let img_path = get_asset_path("original.gif");
+        let img_data = fs::read(img_path).expect("Failed to read test image");
+        let output_data = convert_image_pure(&img_data, "tga").expect("Conversion failed");
+
+        let reloaded_image = image::load_from_memory_with_format(&output_data, ImageFormat::Tga);
+        assert!(reloaded_image.is_ok());
+
+        let output_path = get_asset_path("output_from_gif.tga");
+        fs::write(&output_path, &output_data).expect("Failed to write output image");
+    }
+
+    #[test]
+    fn convert_gif_to_farbfeld() {
+        convert_and_assert_gif("farbfeld", ImageFormat::Farbfeld, "output_from_gif.ff");
     }
 
     #[test]
