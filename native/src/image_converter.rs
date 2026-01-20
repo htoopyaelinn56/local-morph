@@ -78,6 +78,24 @@ pub fn convert_image_pure(input_data: &[u8], target_format_str: &str) -> Result<
         // Promotes 8-bit images to 16-bit (e.g. 255 becomes 65535)
         img = image::DynamicImage::ImageRgba16(img.into_rgba16());
     }
+
+    // --- FIX: OPTIMIZE GIF SPEED ---
+    if output_format == ImageFormat::Gif {
+        // 1. Resize if too big (Optimization)
+        let max_gif_size = 800;
+        if img.width() > max_gif_size || img.height() > max_gif_size {
+            img = img.resize(max_gif_size, max_gif_size, FilterType::Triangle);
+        }
+
+        // 2. NEW FIX: Convert 16-bit (Farbfeld) to 8-bit
+        // The GIF encoder crashes if fed 16-bit data. We must have downscale it.
+        // img.into_rgba8() safely converts Rgba16 (64-bit) -> Rgba8 (32-bit).
+        if matches!(img, image::DynamicImage::ImageRgba16(_))
+            || matches!(img, image::DynamicImage::ImageRgb16(_))
+        {
+            img = image::DynamicImage::ImageRgba8(img.into_rgba8());
+        }
+    }
     // -----------------------------------------
 
     // D. Encode
@@ -210,6 +228,23 @@ mod tests {
         output_name: &str,
     ) {
         let img_path = get_asset_path("original.tga");
+        let img_data = fs::read(img_path).expect("Failed to read test image");
+        let output_data = convert_image_pure(&img_data, target).expect("Conversion failed");
+        let output_format =
+            detect_image_format(&output_data).expect("Failed to detect output format");
+
+        let output_path = get_asset_path(output_name);
+        fs::write(&output_path, &output_data).expect("Failed to write output image");
+
+        assert_eq!(output_format, expected_format);
+    }
+
+    fn convert_and_assert_ff(
+        target: &str,
+        expected_format: ImageFormat,
+        output_name: &str,
+    ) {
+        let img_path = get_asset_path("original.ff");
         let img_data = fs::read(img_path).expect("Failed to read test image");
         let output_data = convert_image_pure(&img_data, target).expect("Conversion failed");
         let output_format =
@@ -774,6 +809,59 @@ mod tests {
     #[test]
     fn convert_tga_to_farbfeld() {
         convert_and_assert_tga("farbfeld", ImageFormat::Farbfeld, "output_from_tga.ff");
+    }
+
+    #[test]
+    fn convert_farbfeld_to_png() {
+        convert_and_assert_ff("png", ImageFormat::Png, "output_from_ff.png");
+    }
+
+    #[test]
+    fn convert_farbfeld_to_jpeg() {
+        convert_and_assert_ff("jpeg", ImageFormat::Jpeg, "output_from_ff.jpeg");
+    }
+
+    #[test]
+    fn convert_farbfeld_to_gif() {
+        convert_and_assert_ff("gif", ImageFormat::Gif, "output_from_ff.gif");
+    }
+
+    #[test]
+    fn convert_farbfeld_to_webp() {
+        convert_and_assert_ff("webp", ImageFormat::WebP, "output_from_ff.webp");
+    }
+
+    #[test]
+    fn convert_farbfeld_to_bmp() {
+        convert_and_assert_ff("bmp", ImageFormat::Bmp, "output_from_ff.bmp");
+    }
+
+    #[test]
+    fn convert_farbfeld_to_ico() {
+        convert_and_assert_ff("ico", ImageFormat::Ico, "output_from_ff.ico");
+    }
+
+    #[test]
+    fn convert_farbfeld_to_tiff() {
+        convert_and_assert_ff("tiff", ImageFormat::Tiff, "output_from_ff.tiff");
+    }
+
+    #[test]
+    fn convert_farbfeld_to_tga() {
+        let img_path = get_asset_path("original.ff");
+        let img_data = fs::read(img_path).expect("Failed to read test image");
+        let output_data = convert_image_pure(&img_data, "tga").expect("Conversion failed");
+
+        let reloaded_image = image::load_from_memory_with_format(&output_data, ImageFormat::Tga);
+        assert!(reloaded_image.is_ok());
+
+        let output_path = get_asset_path("output_from_ff.tga");
+        fs::write(&output_path, &output_data).expect("Failed to write output image");
+    }
+
+    #[test]
+    fn convert_farbfeld_to_farbfeld() {
+        convert_and_assert_ff("farbfeld", ImageFormat::Farbfeld, "output_from_ff.ff");
     }
 
     #[test]
