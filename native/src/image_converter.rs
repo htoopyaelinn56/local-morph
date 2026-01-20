@@ -141,6 +141,23 @@ mod tests {
         assert_eq!(output_format, expected_format);
     }
 
+    fn convert_and_assert_ico(
+        target: &str,
+        expected_format: ImageFormat,
+        output_name: &str,
+    ) {
+        let img_path = get_asset_path("original.ico");
+        let img_data = fs::read(img_path).expect("Failed to read test image");
+        let output_data = convert_image_pure(&img_data, target).expect("Conversion failed");
+        let output_format =
+            detect_image_format(&output_data).expect("Failed to detect output format");
+
+        let output_path = get_asset_path(output_name);
+        fs::write(&output_path, &output_data).expect("Failed to write output image");
+
+        assert_eq!(output_format, expected_format);
+    }
+
     fn convert_and_assert_bmp(
         target: &str,
         expected_format: ImageFormat,
@@ -188,6 +205,14 @@ mod tests {
         let img_data = fs::read(img_path).expect("Failed to read test image");
         let format = detect_image_format(&img_data).expect("Failed to detect format");
         assert_eq!(format, ImageFormat::WebP);
+    }
+
+    #[test]
+    fn guess_ico() {
+        let img_path = get_asset_path("original.ico");
+        let img_data = fs::read(img_path).expect("Failed to read test image");
+        let format = detect_image_format(&img_data).expect("Failed to detect format");
+        assert_eq!(format, ImageFormat::Ico);
     }
 
     #[test]
@@ -485,6 +510,59 @@ mod tests {
     #[test]
     fn convert_webp_to_farbfeld() {
         convert_and_assert_webp("farbfeld", ImageFormat::Farbfeld, "output_from_webp.ff");
+    }
+
+    #[test]
+    fn convert_ico_to_png() {
+        convert_and_assert_ico("png", ImageFormat::Png, "output_from_ico.png");
+    }
+
+    #[test]
+    fn convert_ico_to_jpeg() {
+        convert_and_assert_ico("jpeg", ImageFormat::Jpeg, "output_from_ico.jpeg");
+    }
+
+    #[test]
+    fn convert_ico_to_gif() {
+        convert_and_assert_ico("gif", ImageFormat::Gif, "output_from_ico.gif");
+    }
+
+    #[test]
+    fn convert_ico_to_webp() {
+        convert_and_assert_ico("webp", ImageFormat::WebP, "output_from_ico.webp");
+    }
+
+    #[test]
+    fn convert_ico_to_bmp() {
+        convert_and_assert_ico("bmp", ImageFormat::Bmp, "output_from_ico.bmp");
+    }
+
+    #[test]
+    fn convert_ico_to_ico() {
+        convert_and_assert_ico("ico", ImageFormat::Ico, "output_from_ico.ico");
+    }
+
+    #[test]
+    fn convert_ico_to_tiff() {
+        convert_and_assert_ico("tiff", ImageFormat::Tiff, "output_from_ico.tiff");
+    }
+
+    #[test]
+    fn convert_ico_to_tga() {
+        let img_path = get_asset_path("original.ico");
+        let img_data = fs::read(img_path).expect("Failed to read test image");
+        let output_data = convert_image_pure(&img_data, "tga").expect("Conversion failed");
+
+        let reloaded_image = image::load_from_memory_with_format(&output_data, ImageFormat::Tga);
+        assert!(reloaded_image.is_ok());
+
+        let output_path = get_asset_path("output_from_ico.tga");
+        fs::write(&output_path, &output_data).expect("Failed to write output image");
+    }
+
+    #[test]
+    fn convert_ico_to_farbfeld() {
+        convert_and_assert_ico("farbfeld", ImageFormat::Farbfeld, "output_from_ico.ff");
     }
 
     #[test]
