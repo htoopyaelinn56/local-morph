@@ -1,12 +1,30 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import './App.css';
 
 function App() {
     const [file, setFile] = useState<File | null>(null);
     const [format, setFormat] = useState('png');
     const [isOpen, setIsOpen] = useState(false);
+    const dropdownRef = useRef<HTMLDivElement>(null);
 
     const formats = ['png', 'jpeg', 'jpg', 'gif', 'webp', 'bmp', 'ico', 'tiff', 'tga', 'ff'];
+
+    // Close dropdown when clicking outside
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+                setIsOpen(false);
+            }
+        };
+
+        if (isOpen) {
+            document.addEventListener('mousedown', handleClickOutside);
+        }
+
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, [isOpen]);
 
     const getIcon = (type: string) => {
         switch (type) {
@@ -109,7 +127,7 @@ function App() {
                             {/* Custom Reference Style Dropdown */}
                             <div className="control-group">
                                 <label>Convert to:</label>
-                                <div className="custom-select-container">
+                                <div className="custom-select-container" ref={dropdownRef}>
                                     {/* Trigger */}
                                     <div
                                         className="custom-select-trigger"
