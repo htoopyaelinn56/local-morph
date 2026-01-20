@@ -1,4 +1,5 @@
 use image::imageops::FilterType;
+use image::codecs::tga::TgaDecoder;
 use image::{ImageFormat, Rgba, RgbaImage};
 use std::io::Cursor;
 
@@ -7,7 +8,18 @@ use std::io::Cursor;
 // ----------------------------------------------------------------
 
 fn detect_image_format(input_data: &[u8]) -> Result<ImageFormat, String> {
-    image::guess_format(input_data).map_err(|e| format!("Failed to detect format: {}", e))
+    match image::guess_format(input_data) {
+        Ok(fmt) => Ok(fmt),
+        Err(primary_err) => {
+            // TGA lacks a magic number; try decoding to recognize it.
+            let mut cursor = Cursor::new(input_data);
+            if TgaDecoder::new(&mut cursor).is_ok() {
+                return Ok(ImageFormat::Tga);
+            }
+
+            Err(format!("Failed to detect format: {}", primary_err))
+        }
+    }
 }
 pub fn convert_image_pure(input_data: &[u8], target_format_str: &str) -> Result<Vec<u8>, String> {
     // A. Guess the format
@@ -192,6 +204,23 @@ mod tests {
         assert_eq!(output_format, expected_format);
     }
 
+    fn convert_and_assert_tga(
+        target: &str,
+        expected_format: ImageFormat,
+        output_name: &str,
+    ) {
+        let img_path = get_asset_path("original.tga");
+        let img_data = fs::read(img_path).expect("Failed to read test image");
+        let output_data = convert_image_pure(&img_data, target).expect("Conversion failed");
+        let output_format =
+            detect_image_format(&output_data).expect("Failed to detect output format");
+
+        let output_path = get_asset_path(output_name);
+        fs::write(&output_path, &output_data).expect("Failed to write output image");
+
+        assert_eq!(output_format, expected_format);
+    }
+
     #[test]
     fn guess_png() {
         let img_path = get_asset_path("original.png");
@@ -246,6 +275,14 @@ mod tests {
         let img_data = fs::read(img_path).expect("Failed to read test image");
         let format = detect_image_format(&img_data).expect("Failed to detect format");
         assert_eq!(format, ImageFormat::Tiff);
+    }
+
+    #[test]
+    fn guess_tga() {
+        let img_path = get_asset_path("original.tga");
+        let img_data = fs::read(img_path).expect("Failed to read test image");
+        let format = detect_image_format(&img_data).expect("Failed to detect format");
+        assert_eq!(format, ImageFormat::Tga);
     }
 
     #[test]
@@ -586,11 +623,6 @@ mod tests {
     }
 
     #[test]
-    fn convert_ico_to_farbfeld() {
-        convert_and_assert_ico("farbfeld", ImageFormat::Farbfeld, "output_from_ico.ff");
-    }
-
-    #[test]
     fn convert_bmp_to_png() {
         convert_and_assert_bmp("png", ImageFormat::Png, "output_from_bmp.png");
     }
@@ -689,6 +721,59 @@ mod tests {
     #[test]
     fn convert_tiff_to_farbfeld() {
         convert_and_assert_tiff("farbfeld", ImageFormat::Farbfeld, "output_from_tiff.ff");
+    }
+
+    #[test]
+    fn convert_tga_to_png() {
+        convert_and_assert_tga("png", ImageFormat::Png, "output_from_tga.png");
+    }
+
+    #[test]
+    fn convert_tga_to_jpeg() {
+        convert_and_assert_tga("jpeg", ImageFormat::Jpeg, "output_from_tga.jpeg");
+    }
+
+    #[test]
+    fn convert_tga_to_gif() {
+        convert_and_assert_tga("gif", ImageFormat::Gif, "output_from_tga.gif");
+    }
+
+    #[test]
+    fn convert_tga_to_webp() {
+        convert_and_assert_tga("webp", ImageFormat::WebP, "output_from_tga.webp");
+    }
+
+    #[test]
+    fn convert_tga_to_bmp() {
+        convert_and_assert_tga("bmp", ImageFormat::Bmp, "output_from_tga.bmp");
+    }
+
+    #[test]
+    fn convert_tga_to_ico() {
+        convert_and_assert_tga("ico", ImageFormat::Ico, "output_from_tga.ico");
+    }
+
+    #[test]
+    fn convert_tga_to_tiff() {
+        convert_and_assert_tga("tiff", ImageFormat::Tiff, "output_from_tga.tiff");
+    }
+
+    #[test]
+    fn convert_tga_to_tga() {
+        let img_path = get_asset_path("original.tga");
+        let img_data = fs::read(img_path).expect("Failed to read test image");
+        let output_data = convert_image_pure(&img_data, "tga").expect("Conversion failed");
+
+        let reloaded_image = image::load_from_memory_with_format(&output_data, ImageFormat::Tga);
+        assert!(reloaded_image.is_ok());
+
+        let output_path = get_asset_path("output_from_tga.tga");
+        fs::write(&output_path, &output_data).expect("Failed to write output image");
+    }
+
+    #[test]
+    fn convert_tga_to_farbfeld() {
+        convert_and_assert_tga("farbfeld", ImageFormat::Farbfeld, "output_from_tga.ff");
     }
 
     #[test]
