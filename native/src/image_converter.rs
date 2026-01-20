@@ -235,10 +235,7 @@ mod tests {
         // TGA cannot be guessed. We must explicitly ask: "Is this a valid TGA?"
         let reloaded_image = image::load_from_memory_with_format(&output_data, ImageFormat::Tga);
 
-        assert!(
-            reloaded_image.is_ok(),
-            "The output bytes should be a valid TGA image that we can reload"
-        );
+        assert!(reloaded_image.is_ok());
 
         // Optional: Write to file to check manually
         let output_path = get_asset_path("output_from_png.tga");
