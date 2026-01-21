@@ -127,6 +127,8 @@ function App() {
             console.error('Conversion error:', err);
             setError(err instanceof Error ? err.message : 'Failed to convert image');
         } finally {
+            // dummy await 500ms to show converting state
+            await new Promise(res => setTimeout(res, 500));
             setIsConverting(false);
         }
     };
