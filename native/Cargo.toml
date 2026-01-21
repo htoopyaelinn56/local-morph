@@ -7,9 +7,15 @@ edition = "2024"
 crate-type = ["cdylib"]
 
 [dependencies]
-wasm-bindgen = "0.2.95"
+wasm-bindgen = "0.2.108"
 image = { version = "0.25.9", default-features = false, features = [
     "png", "jpeg", "gif", "webp", "bmp", "ico", "tiff",
-    "tga", "pnm", "dds", "qoi", "ff",
-    "default-formats"] }
+    "tga", "ff" ] }
 web-sys = { version = "0.3.85", features = ["console"] }
+
+[profile.release]
+opt-level = "z"       # Optimize for size ("z" is more aggressive than "s")
+lto = true            # Enable Link Time Optimization (removes dead code)
+codegen-units = 1     # Slower build, but allows for better optimization
+panic = "abort"       # Removes panic unwinding code (saves ~20kb)
+strip = true          # Strip symbols from the binary (requires Rust 1.59+)
