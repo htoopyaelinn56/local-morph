@@ -12,7 +12,6 @@ function App() {
     const [wasmReady, setWasmReady] = useState(false);
     const [wasmError, setWasmError] = useState<string | null>(null);
     const dropdownRef = useRef<HTMLDivElement>(null);
-    const fileInputRef = useRef<HTMLInputElement>(null);
 
     const formats = ['png', 'jpeg', 'jpg', 'gif', 'webp', 'bmp', 'ico', 'tiff', 'tga', 'ff'];
 
@@ -81,14 +80,6 @@ function App() {
 
     const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
         e.preventDefault();
-    };
-
-    const handleRemoveFile = () => {
-        setFile(null);
-        // Reset the file input value to allow selecting the same file again
-        if (fileInputRef.current) {
-            fileInputRef.current.value = '';
-        }
     };
 
     const handleConvert = async () => {
@@ -173,10 +164,10 @@ function App() {
             {/* Navigation */}
             <nav className="navbar">
                 <div className="logo">
-                    <span className="logo-icon">⚡</span> LocalMorph
+                    <img src="/local_morph.svg" alt="LocalMorph" className="logo-icon" /> LocalMorph
                 </div>
                 <div className="nav-links">
-                    <button className="neo-button-small">About</button>
+                    <button className="neo-button-small">Feature Request & Report</button>
                 </div>
             </nav>
 
@@ -212,7 +203,6 @@ function App() {
                                 className="hidden-input"
                                 accept="image/*"
                                 onChange={handleFileChange}
-                                ref={fileInputRef}
                             />
 
                             {file ? (
@@ -222,7 +212,7 @@ function App() {
                                         <span className="file-name">{file.name}</span>
                                         <span className="file-size">{(file.size / 1024).toFixed(1)} KB</span>
                                     </div>
-                                    <button onClick={handleRemoveFile} className="remove-btn">✕</button>
+                                    <button onClick={() => setFile(null)} className="remove-btn">✕</button>
                                 </div>
                             ) : (
                                 <label htmlFor="file-upload" className="upload-label">
