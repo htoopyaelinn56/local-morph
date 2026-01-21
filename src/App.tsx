@@ -167,7 +167,7 @@ function App() {
                     <img src="/local_morph.svg" alt="LocalMorph" className="logo-icon" /> LocalMorph
                 </div>
                 <div className="nav-links">
-                    <button className="neo-button-small">Feature Request & Report</button>
+                    <button className="neo-button-small">Report</button>
                 </div>
             </nav>
 
