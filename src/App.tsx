@@ -66,12 +66,10 @@ function App() {
             {/* Navigation */}
             <nav className="navbar">
                 <div className="logo">
-                    <span className="logo-icon">⚡</span> Convert.io
+                    <span className="logo-icon">⚡</span> LocalMorph
                 </div>
                 <div className="nav-links">
-                    <a href="#">About</a>
-                    <a href="#" className="active">Tools</a>
-                    <button className="neo-button-small">Github</button>
+                    <button className="neo-button-small">About</button>
                 </div>
             </nav>
 
@@ -79,7 +77,7 @@ function App() {
             <main className="main-content">
                 <div className="hero-text">
                     <h1>TRANSFORM YOUR <span className="highlight">IMAGES</span></h1>
-                    <p>Super fast. Super simple. Neobrutalist style.</p>
+                    <p>Super fast. Super simple. Super secure.</p>
                 </div>
 
                 {/* Conversion Card */}

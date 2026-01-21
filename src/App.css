@@ -181,6 +181,7 @@ body {
   transition: all 0.2s;
   margin-bottom: 1.5rem;
   position: relative;
+  height: 160px;
 }
 
 .upload-zone:hover, .upload-zone.has-file {
@@ -207,6 +208,7 @@ body {
   border-radius: var(--radius-main);
   box-shadow: 3px 3px 0 0 black;
   text-align: left;
+  margin-top: 12px;
 }
 
 .icon-wrapper { font-size: 1.5rem; }
@@ -413,4 +415,8 @@ body {
   .controls-row { flex-direction: column; align-items: stretch; gap: 1.5rem; }
   .shape { display: none; }
   .cta-button { height: auto; padding: 14px; }
+  .hero-text {
+    padding-top: 30px;
+    padding-bottom: 15px;
+  }
 }
