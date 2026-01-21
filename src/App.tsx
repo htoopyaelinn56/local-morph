@@ -1,13 +1,35 @@
 import React, { useState, useRef, useEffect } from 'react';
 import './App.css';
+import { convert_image } from './wasm/native';
+import init from './wasm/native.js';
 
 function App() {
     const [file, setFile] = useState<File | null>(null);
     const [format, setFormat] = useState('png');
     const [isOpen, setIsOpen] = useState(false);
+    const [isConverting, setIsConverting] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+    const [wasmReady, setWasmReady] = useState(false);
+    const [wasmError, setWasmError] = useState<string | null>(null);
     const dropdownRef = useRef<HTMLDivElement>(null);
 
     const formats = ['png', 'jpeg', 'jpg', 'gif', 'webp', 'bmp', 'ico', 'tiff', 'tga', 'ff'];
+
+    // Initialize WASM after first frame (background loading)
+    useEffect(() => {
+        // Use requestAnimationFrame to ensure UI renders first
+        requestAnimationFrame(() => {
+            init()
+                .then(() => {
+                    setWasmReady(true);
+                    console.log('WASM module initialized successfully');
+                })
+                .catch((err) => {
+                    console.error('Failed to initialize WASM:', err);
+                    setWasmError('Failed to load converter module. Please refresh the page.');
+                });
+        });
+    }, []);
 
     // Close dropdown when clicking outside
     useEffect(() => {
@@ -56,6 +78,59 @@ function App() {
         e.preventDefault();
     };
 
+    const handleConvert = async () => {
+        if (!file) {
+            setError('Please select a file first');
+            return;
+        }
+
+        if (!wasmReady) {
+            setError('Converter is still loading. Please wait a moment and try again.');
+            return;
+        }
+
+        setIsConverting(true);
+        setError(null);
+
+        try {
+            // Read file as ArrayBuffer
+            const arrayBuffer = await file.arrayBuffer();
+            const inputData = new Uint8Array(arrayBuffer);
+
+            // Call WASM function to convert image
+            const outputData = convert_image(inputData, format);
+
+            // Create blob from output data
+            // @ts-expect-error/blob
+            const blob = new Blob([outputData.buffer], { type: `image/${format}` });
+
+            // Generate download URL
+            const url = URL.createObjectURL(blob);
+
+            // Create temporary anchor element to trigger download
+            const a = document.createElement('a');
+            a.href = url;
+
+            // Generate output filename (keep original name but change extension)
+            const originalName = file.name.replace(/\.[^/.]+$/, ''); // Remove extension
+            a.download = `${originalName}.${format}`;
+
+            // Trigger download
+            document.body.appendChild(a);
+            a.click();
+
+            // Cleanup
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+
+        } catch (err) {
+            console.error('Conversion error:', err);
+            setError(err instanceof Error ? err.message : 'Failed to convert image');
+        } finally {
+            setIsConverting(false);
+        }
+    };
+
     return (
         <div className="app-container">
             {/* Background Decorative Shapes */}
@@ -83,7 +158,13 @@ function App() {
                 {/* Conversion Card */}
                 <div className="converter-card">
                     <div className="card-badge">
-                        Available for Images
+                        {wasmError ? (
+                            <span style={{ color: '#ff4444' }}>⚠️ Module Error</span>
+                        ) : wasmReady ? (
+                            'Available for Images'
+                        ) : (
+                            <span style={{ color: '#ff9800' }}>⏳ Initializing...</span>
+                        )}
                     </div>
 
                     <div className="card-content">
@@ -167,10 +248,36 @@ function App() {
                             </div>
 
                             {/* Action Button */}
-                            <button className="neo-button cta-button">
-                                Start Converting <span>🚀</span>
+                            <button
+                                className="neo-button cta-button"
+                                onClick={handleConvert}
+                                disabled={!file || isConverting || !wasmReady}
+                            >
+                                {isConverting ? (
+                                    <>Converting... <span>⏳</span></>
+                                ) : !wasmReady ? (
+                                    <>Loading... <span>⏳</span></>
+                                ) : (
+                                    <>Start Converting <span>🚀</span></>
+                                )}
                             </button>
                         </div>
+
+                        {/* Error Display */}
+                        {(error || wasmError) && (
+                            <div className="error-message" style={{
+                                marginTop: '1rem',
+                                padding: '0.75rem 1rem',
+                                backgroundColor: '#fee',
+                                border: '2px solid #f88',
+                                borderRadius: '8px',
+                                color: '#c00',
+                                fontSize: '0.9rem',
+                                fontWeight: '500'
+                            }}>
+                                ❌ {error || wasmError}
+                            </div>
+                        )}
                     </div>
                 </div>
 
