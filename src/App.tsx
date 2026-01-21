@@ -63,14 +63,18 @@ function App() {
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files && e.target.files[0]) {
-            setFile(e.target.files[0]);
+            const selectedFile = e.target.files[0];
+            setFile(selectedFile);
+            setError(null); // Clear any previous errors
         }
     };
 
     const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
         e.preventDefault();
         if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-            setFile(e.dataTransfer.files[0]);
+            const droppedFile = e.dataTransfer.files[0];
+            setFile(droppedFile);
+            setError(null); // Clear any previous errors
         }
     };
 
@@ -93,9 +97,26 @@ function App() {
         setError(null);
 
         try {
-            // Read file as ArrayBuffer
-            const arrayBuffer = await file.arrayBuffer();
-            const inputData = new Uint8Array(arrayBuffer);
+            // Read file using FileReader (more compatible with mobile browsers)
+            // This avoids permission issues on Android Chrome
+            const inputData = await new Promise<Uint8Array>((resolve, reject) => {
+                const reader = new FileReader();
+
+                reader.onload = (e) => {
+                    if (e.target?.result) {
+                        const arrayBuffer = e.target.result as ArrayBuffer;
+                        resolve(new Uint8Array(arrayBuffer));
+                    } else {
+                        reject(new Error('Failed to read file'));
+                    }
+                };
+
+                reader.onerror = () => {
+                    reject(new Error('File reading failed. Please try selecting the file again.'));
+                };
+
+                reader.readAsArrayBuffer(file);
+            });
 
             // Call WASM function to convert image
             const outputData = convert_image(inputData, format);
