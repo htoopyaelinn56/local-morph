@@ -98,6 +98,7 @@ body {
   cursor: pointer;
   box-shadow: 3px 3px 0 0 black;
   transition: all 0.1s;
+  color: black;
 }
 
 .neo-button-small:hover {
@@ -388,13 +389,22 @@ body {
 
 .feature-card h3 {
   font-size: 1.1rem;
-  margin-bottom: 0.2rem;
   text-shadow: 2px 2px 0px rgba(0,0,0,0.2);
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0;
 }
 
 .feature-card p {
   font-weight: 600;
   font-size: 0.9rem;
+  flex: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0;
 }
 
 /* --- Shapes --- */
@@ -441,5 +451,11 @@ body {
   .hero-text {
     padding-top: 30px;
     padding-bottom: 15px;
+  }
+  .upload-zone {
+    padding: 1rem;
+  }
+  .upload-zone.has-file {
+    padding: 1.8rem 1rem;
   }
 }
