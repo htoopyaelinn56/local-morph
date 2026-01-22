@@ -1,11 +1,18 @@
 import React, { useState, useRef, useEffect } from 'react';
 import './App.css';
-import { convert_image } from './wasm/native';
-import init from './wasm/native.js';
+import { convert_image } from '../public/wasm/native';
+import init from '../public/wasm/native.js';
+import { SUPPORTED_FORMATS, type SupportedFormat, normalizeFormat } from './formats';
 
-function App() {
+type AppProps = {
+    initialTargetFormat?: SupportedFormat | null;
+    initialSourceFormat?: SupportedFormat | null;
+};
+
+function App({ initialTargetFormat }: AppProps) {
     const [file, setFile] = useState<File | null>(null);
-    const [format, setFormat] = useState('png');
+    const initialFormat = normalizeFormat(initialTargetFormat) ?? 'jpg';
+    const [format, setFormat] = useState<SupportedFormat>(initialFormat);
     const [isOpen, setIsOpen] = useState(false);
     const [isConverting, setIsConverting] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -13,7 +20,7 @@ function App() {
     const [wasmError, setWasmError] = useState<string | null>(null);
     const dropdownRef = useRef<HTMLDivElement>(null);
 
-    const formats = ['png', 'jpeg', 'jpg', 'gif', 'webp', 'bmp', 'ico', 'tiff', 'tga', 'ff'];
+    const formats = SUPPORTED_FORMATS;
 
     // Initialize WASM after first frame (background loading)
     useEffect(() => {
@@ -325,3 +332,4 @@ function App() {
 }
 
 export default App;
+
