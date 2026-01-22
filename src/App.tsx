@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import './App.css';
-import { convert_image } from './wasm/native';
-import init from './wasm/native.js';
+import { convert_image } from '../public/wasm/native';
+import init from '../public/wasm/native.js';
 
 function App() {
     const [file, setFile] = useState<File | null>(null);
