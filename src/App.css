@@ -99,11 +99,13 @@ body {
   box-shadow: 3px 3px 0 0 black;
   transition: all 0.1s;
   color: black;
+  font-family: inherit;
 }
 
 .neo-button-small:hover {
   transform: translate(2px, 2px);
   box-shadow: 1px 1px 0 0 black;
+  font-family: inherit;
 }
 
 /* --- Main Content Area --- */
