@@ -273,7 +273,7 @@ function App({ initialTargetFormat }: AppProps) {
                             <button
                                 className="neo-button cta-button"
                                 onClick={handleConvert}
-                                disabled={!file || isConverting || !wasmReady}
+                                disabled={isConverting || !wasmReady}
                             >
                                 {isConverting ? (
                                     <>Converting... <span>⏳</span></>
