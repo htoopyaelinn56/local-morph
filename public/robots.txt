@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://localmorph.web.app/sitemap.xml
