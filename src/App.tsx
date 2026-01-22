@@ -1,15 +1,15 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, {useState, useRef, useEffect} from 'react';
 import './App.css';
-import { convert_image } from '../public/wasm/native';
+import {convert_image} from '../public/wasm/native';
 import init from '../public/wasm/native.js';
-import { SUPPORTED_FORMATS, type SupportedFormat, normalizeFormat } from './formats';
+import {SUPPORTED_FORMATS, type SupportedFormat, normalizeFormat} from './formats';
 
 type AppProps = {
     initialTargetFormat?: SupportedFormat | null;
     initialSourceFormat?: SupportedFormat | null;
 };
 
-function App({ initialTargetFormat }: AppProps) {
+function App({initialTargetFormat}: AppProps) {
     const [file, setFile] = useState<File | null>(null);
     const initialFormat = normalizeFormat(initialTargetFormat) ?? 'jpg';
     const [format, setFormat] = useState<SupportedFormat>(initialFormat);
@@ -57,14 +57,21 @@ function App({ initialTargetFormat }: AppProps) {
 
     const getIcon = (type: string) => {
         switch (type) {
-            case 'png': return '🖼️';
+            case 'png':
+                return '🖼️';
             case 'jpg':
-            case 'jpeg': return '📸';
-            case 'gif': return '👾';
-            case 'webp': return '🌐';
-            case 'ico': return '✨';
-            case 'bmp': return '🎨';
-            default: return '📄';
+            case 'jpeg':
+                return '📸';
+            case 'gif':
+                return '👾';
+            case 'webp':
+                return '🌐';
+            case 'ico':
+                return '✨';
+            case 'bmp':
+                return '🎨';
+            default:
+                return '📄';
         }
     };
 
@@ -130,7 +137,7 @@ function App({ initialTargetFormat }: AppProps) {
 
             // Create blob from output data
             // @ts-expect-error/blob
-            const blob = new Blob([outputData.buffer], { type: `image/${format}` });
+            const blob = new Blob([outputData.buffer], {type: `image/${format}`});
 
             // Generate download URL
             const url = URL.createObjectURL(blob);
@@ -171,10 +178,15 @@ function App({ initialTargetFormat }: AppProps) {
             {/* Navigation */}
             <nav className="navbar">
                 <div className="logo">
-                    <img src="/local_morph.svg" alt="LocalMorph" className="logo-icon" /> LocalMorph
+                    <img src="/local_morph.svg" alt="LocalMorph" className="logo-icon"/> LocalMorph
                 </div>
                 <div className="nav-links">
-                    <button className="neo-button-small">Report</button>
+                    <button
+                        className="neo-button-small"
+                        onClick={() => window.open("https://github.com/htoopyaelinn56/local-morph", "_blank", "noopener,noreferrer")}
+                    >
+                        Github
+                    </button>
                 </div>
             </nav>
 
@@ -187,7 +199,7 @@ function App({ initialTargetFormat }: AppProps) {
 
                 {/* Conversion Card */}
                 <div className="converter-card">
-                    <div className="card-badge"> Available for Images </div>
+                    <div className="card-badge"> Available for Images</div>
 
                     <div className="card-content">
                         {/* Upload Area */}
@@ -234,7 +246,7 @@ function App({ initialTargetFormat }: AppProps) {
                                         className="custom-select-trigger"
                                         onClick={() => setIsOpen(!isOpen)}
                                     >
-                                        <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                                        <div style={{display: 'flex', gap: '8px', alignItems: 'center'}}>
                                             <span>{getIcon(format)}</span>
                                             <span>{format.toUpperCase()}</span>
                                         </div>
@@ -260,7 +272,7 @@ function App({ initialTargetFormat }: AppProps) {
                                                         setIsOpen(false);
                                                     }}
                                                 >
-                                                    <span style={{ fontSize: '1.2rem' }}>{getIcon(f)}</span>
+                                                    <span style={{fontSize: '1.2rem'}}>{getIcon(f)}</span>
                                                     <span>{f.charAt(0).toUpperCase() + f.slice(1)}</span>
                                                 </div>
                                             ))}
