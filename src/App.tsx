@@ -187,15 +187,7 @@ function App({ initialTargetFormat }: AppProps) {
 
                 {/* Conversion Card */}
                 <div className="converter-card">
-                    <div className="card-badge">
-                        {wasmError ? (
-                            <span style={{ color: '#ff4444' }}>⚠️ Module Error</span>
-                        ) : wasmReady ? (
-                            'Available for Images'
-                        ) : (
-                            <span style={{ color: '#ff9800' }}>⏳ Initializing...</span>
-                        )}
-                    </div>
+                    <div className="card-badge"> Available for Images </div>
 
                     <div className="card-content">
                         {/* Upload Area */}
