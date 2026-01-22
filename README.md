@@ -1,73 +1,69 @@
-# React + TypeScript + Vite
+# LocalMorph
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+LocalMorph is an offline-first image converter that runs entirely in the browser. A Rust image pipeline is compiled to WebAssembly for fast, private conversions, while the UI is built with React + Vite.
 
-Currently, two official plugins are available:
+## Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- Converts between PNG, JPG/JPEG, GIF, WEBP, BMP, ICO, TIFF, TGA, and Farbfeld (FF)
+- All processing stays on-device; no uploads or servers involved
+- Pre-rendered pages for common routes like `/png-to-webp` for quick load + SEO
+- WASM module bundled in `public/wasm` and lazy-loaded on first use
+- Handles edge cases: JPEG alpha gets blended to white; ICO resized to ≤256x256; GIFs downscaled for speed
 
-## React Compiler
+## Prerequisites
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- Node.js 18+ and npm
+- Rust toolchain with `wasm-pack` (only needed if rebuilding the WASM module)
 
-## Expanding the ESLint configuration
+## Install and Run
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+npm install
+npm run dev
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+Open the printed local URL from Vite.
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+## Build for Production
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+npm run build
+node scripts/prerender.mjs
 ```
+
+`npm run build` produces the client bundle in `dist`; `scripts/prerender.mjs` renders SSR HTML for all format routes and writes `sitemap.xml`.
+
+You can also run the helper script:
+
+```bash
+bash scripts/build.sh
+```
+
+## Rebuilding the WASM Module
+
+The Rust code lives in `native/`. Regenerate the WebAssembly bundle into `public/wasm` with:
+
+```bash
+bash scripts/build_wasm.sh
+```
+
+This runs `wasm-pack build --target web`, copies the output, and cleans the temp `pkg/` folder. Run this whenever you change Rust code or update dependencies.
+
+## How It Works
+
+- UI: React + TypeScript + Vite (rolldown) with a custom dropdown and drag-and-drop upload (`src/App.tsx`).
+- Formats: central list in `src/formats.ts` keeps UI, SSR, and routing in sync.
+- SSR/Prerender: `src/entry-ssr.tsx` builds titles/meta and exports routes used by `scripts/prerender.mjs` to emit static HTML under `dist/<route>/index.html`.
+- WASM bridge: `public/wasm/native.js` exposes `convert_image` compiled from Rust (`native/src/lib.rs` and `native/src/image_converter.rs`).
+- Assets for manual testing live in `native/assets/`.
+
+## Notes and Limits
+
+- ICO outputs are capped to 256×256 for compatibility.
+- GIFs larger than 800px are downscaled to speed up encoding; 16-bit inputs are converted to 8-bit for GIF safety.
+- JPEG outputs blend transparent pixels onto a white background.
+- The WASM module loads after first paint; a short “Initializing…” state is expected on first use.
+
+## Deployment
+
+Serve the `dist` folder with any static host (Firebase Hosting, Netlify, Vercel static). Ensure `public/wasm` is included; it is copied during build.
