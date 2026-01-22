@@ -1,7 +1,7 @@
-import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { build } from 'vite';
+import * as fs from "node:fs";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const projectRoot = path.resolve(__dirname, '..');
@@ -9,15 +9,14 @@ const distDir = path.resolve(projectRoot, 'dist');
 const ssrOutDir = path.resolve(projectRoot, 'dist-ssr');
 
 async function buildClientAndServer() {
-  await build({ logLevel: 'info' });
+  const base = { root: projectRoot, logLevel: 'info' };
+  await build(base);
   await build({
-    logLevel: 'info',
+    ...base,
     build: {
       ssr: path.resolve(projectRoot, 'src/entry-ssr.tsx'),
       outDir: ssrOutDir,
-      rollupOptions: {
-        input: path.resolve(projectRoot, 'src/entry-ssr.tsx'),
-      },
+      rollupOptions: { input: path.resolve(projectRoot, 'src/entry-ssr.tsx') },
     },
   });
 }
